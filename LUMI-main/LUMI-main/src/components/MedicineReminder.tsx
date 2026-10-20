@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 interface Reminder {
@@ -10,31 +9,27 @@ interface Reminder {
 }
 
 const MedicineReminder = () => {
-  const [reminders, setReminders] = useState<Reminder[]>([
-    {
-      id: '1',
-      medicineName: 'Vitamin D',
-      time: '09:00',
-      taken: false,
-    },
-    {
-      id: '2',
-      medicineName: 'Iron Supplement',
-      time: '14:00',
-      taken: false,
-    },
-  ]);
+  // Start empty instead of showing fictional medication data.
+  const [reminders, setReminders] = useState<Reminder[]>([]);
 
   const [newMedicine, setNewMedicine] = useState('');
   const [newTime, setNewTime] = useState('');
 
   const handleAddReminder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMedicine || !newTime) return;
+    const medicineName = newMedicine.trim();
+    if (!medicineName || !newTime) {
+      toast.error('Enter a medicine name and reminder time.');
+      return;
+    }
+    if (medicineName.length > 100) {
+      toast.error('Medicine name must be 100 characters or fewer.');
+      return;
+    }
 
     const newReminder: Reminder = {
       id: Date.now().toString(),
-      medicineName: newMedicine,
+      medicineName,
       time: newTime,
       taken: false,
     };
@@ -94,6 +89,9 @@ const MedicineReminder = () => {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Today's Medicines</h3>
         <div className="space-y-4">
+          {reminders.length === 0 && (
+            <p className="text-sm text-gray-500">No reminders added yet. Add your own schedule above. Reminders are stored only for this session.</p>
+          )}
           {reminders.map(reminder => (
             <div
               key={reminder.id}
