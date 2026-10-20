@@ -1,5 +1,5 @@
 import VoiceAssistant from './VoiceAssistant';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   HomeIcon,
@@ -25,7 +25,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [date, setDate] = useState(new Date());
 
-  const handleVoiceCommand = (command: string) => {
+  const handleVoiceCommand = useCallback((command: string) => {
     const normalized = command.toLowerCase();
     if (normalized.includes('open chat')) setActiveTab('chat');
     else if (normalized.includes('open music')) setActiveTab('music');
@@ -36,7 +36,7 @@ const Dashboard = () => {
       // The voice assistant owns its listening state; no page action is needed here.
       return;
     }
-  };
+  }, []);
 
   const navItems = [
     { id: 'home', name: 'Home', icon: HomeIcon },
