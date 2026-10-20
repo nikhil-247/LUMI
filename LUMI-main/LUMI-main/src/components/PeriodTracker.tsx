@@ -10,14 +10,8 @@ interface PeriodLog {
 }
 
 const PeriodTracker = () => {
-  const [logs, setLogs] = useState<PeriodLog[]>([
-    {
-      id: '1',
-      startDate: '2024-01-01',
-      endDate: '2024-01-05',
-      symptoms: ['Cramps', 'Fatigue'],
-    },
-  ]);
+  // No sample health data: users start with an empty tracker.
+  const [logs, setLogs] = useState<PeriodLog[]>([]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -34,7 +28,18 @@ const PeriodTracker = () => {
 
   const handleAddLog = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!startDate || !endDate) return;
+    if (!startDate || !endDate) {
+      toast.error('Choose both a start date and an end date.');
+      return;
+    }
+    if (endDate < startDate) {
+      toast.error('End date cannot be before the start date.');
+      return;
+    }
+    if (logs.some((log) => startDate <= log.endDate && endDate >= log.startDate)) {
+      toast.error('This date range overlaps an existing log.');
+      return;
+    }
 
     const newLog: PeriodLog = {
       id: Date.now().toString(),
@@ -60,7 +65,8 @@ const PeriodTracker = () => {
 
   const calculateNextPeriod = () => {
     if (logs.length === 0) return null;
-    const lastPeriod = new Date(logs[logs.length - 1].startDate);
+    const latestLog = [...logs].sort((a, b) => b.startDate.localeCompare(a.startDate))[0];
+    const lastPeriod = new Date(`${latestLog.startDate}T00:00:00`);
     return format(addDays(lastPeriod, 28), 'MMM dd, yyyy');
   };
 
@@ -126,12 +132,16 @@ const PeriodTracker = () => {
         {calculateNextPeriod() && (
           <div className="mb-6 p-4 bg-pink-50 rounded-lg">
             <p className="text-pink-800">
-              Next period expected around:{' '}
+              Estimated next period (assuming a 28-day cycle):{' '}
               <span className="font-semibold">{calculateNextPeriod()}</span>
             </p>
+            <p className="text-xs text-pink-700 mt-1">This is a simple estimate, not a medical prediction. Cycle lengths can vary.</p>
           </div>
         )}
         <div className="space-y-4">
+          {logs.length === 0 && (
+            <p className="text-sm text-gray-500">No period logs yet. Add a date range to start tracking. Entries remain in memory and are not saved after refresh.</p>
+          )}
           {logs.map(log => (
             <div
               key={log.id}
@@ -145,10 +155,10 @@ const PeriodTracker = () => {
                   </p>
                   <p className="text-sm text-gray-500">
                     Duration: {
-                      Math.ceil(
-                        (new Date(log.endDate).getTime() - new Date(log.startDate).getTime()) /
+                      Math.floor(
+                        (new Date(`${log.endDate}T00:00:00`).getTime() - new Date(`${log.startDate}T00:00:00`).getTime()) /
                         (1000 * 60 * 60 * 24)
-                      )
+                      ) + 1
                     } days
                   </p>
                 </div>
