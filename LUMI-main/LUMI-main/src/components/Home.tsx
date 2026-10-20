@@ -26,7 +26,7 @@ export default function SelfLoveLandingPage() {
     { id: 2, message: "💬 Say hi to your Supportive Friend Chatbot" },
     { id: 3, message: "📝 Your Self Love Plan for today is ready!" }
   ]);
-  const [journalDates, setJournalDates] = useState<string[]>([]);
+  const [journalEntries, setJournalEntries] = useState<Record<string, string>>({});
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [journalText, setJournalText] = useState("");
 
@@ -42,11 +42,22 @@ export default function SelfLoveLandingPage() {
   };
 
   const handleJournalSave = () => {
-    setJournalDates((prev) => [...new Set([...prev, selectedDate.toDateString()])]);
+    const content = journalText.trim();
+    if (!content) return;
+    setJournalEntries((prev) => ({
+      ...prev,
+      [selectedDate.toDateString()]: content,
+    }));
+  };
+
+  const handleJournalDateChange = (value: Date | null | (Date | null)[]) => {
+    if (!(value instanceof Date)) return;
+    setSelectedDate(value);
+    setJournalText(journalEntries[value.toDateString()] ?? '');
   };
 
   const isJournaledDate = (date: Date) => {
-    return journalDates.includes(date.toDateString());
+    return Object.prototype.hasOwnProperty.call(journalEntries, date.toDateString());
   };
 
   return (
@@ -163,15 +174,11 @@ export default function SelfLoveLandingPage() {
               className="w-full p-4 rounded-xl border border-purple-200 shadow focus:outline-none focus:ring-2 focus:ring-purple-300"
             ></textarea>
             <button onClick={handleJournalSave} className="mt-4 px-4 py-2 bg-purple-500 text-white rounded shadow hover:bg-purple-600">Save Entry</button>
-            <p className="text-xs text-gray-400 mt-2">This is private and stays only with you 💖</p>
+            <p className="text-xs text-gray-500 mt-2">Entries are kept in page memory only and are lost when you refresh or leave this page. They are not synced to an account.</p>
           </div>
           <div className="w-full md:w-1/3">
             <Calendar
-              onChange={(value: Date | Date[]) => {
-                if (value instanceof Date) {
-                  setSelectedDate(value);
-                }
-              }}
+              onChange={handleJournalDateChange}
               value={selectedDate}
               tileClassName={({ date }) =>
                 isJournaledDate(date) ? 'bg-purple-200 rounded-full' : null
