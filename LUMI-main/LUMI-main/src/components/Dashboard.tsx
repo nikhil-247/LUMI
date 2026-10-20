@@ -14,8 +14,8 @@ import AIChat from './AIChat';
 import MedicineReminder from './MedicineReminder';
 import PeriodTracker from './PeriodTracker';
 import ActivityChart from './ActivityChart';
-import PremiumPage from './PremiumPage'; // Import PremiumPage
-import Music from './Music'; // Assuming you have a Music component
+import PremiumPage from './PremiumPage';
+import Music from './Music';
 import Calendar from 'react-calendar';
 import Home from './Home';
 import Profile from './Profile';
@@ -26,59 +26,46 @@ const Dashboard = () => {
   const [date, setDate] = useState(new Date());
 
   const handleVoiceCommand = (command: string) => {
-    // Map voice commands to actions
-    if (command.toLowerCase().includes('open chat')) {
-      setActiveTab('chat');
-    } else if (command.toLowerCase().includes('open music')) {
-      setActiveTab('music');
-    } else if (command.toLowerCase().includes('open profile')) {
-      setActiveTab('profile');
-    } else if (command.toLowerCase().includes('open premium')) {
-      setActiveTab('premium');
-    } else if (command.toLowerCase().includes('dashboard')) {
-      setActiveTab('overview');
-    } else if (command.toLowerCase().includes('stop listening')) {
-      console.log('Stopping voice assistant...');
-    } else {
-      console.log('Unknown command:', command);
+    const normalized = command.toLowerCase();
+    if (normalized.includes('open chat')) setActiveTab('chat');
+    else if (normalized.includes('open music')) setActiveTab('music');
+    else if (normalized.includes('open profile')) setActiveTab('profile');
+    else if (normalized.includes('open premium')) setActiveTab('premium');
+    else if (normalized.includes('dashboard')) setActiveTab('overview');
+    else if (normalized.includes('stop listening')) {
+      // The voice assistant owns its listening state; no page action is needed here.
+      return;
     }
   };
 
   const navItems = [
-
     { id: 'home', name: 'Home', icon: HomeIcon },
     { id: 'overview', name: 'Dashboard', icon: HomeIcon },
     { id: 'chat', name: 'AI Chat', icon: ChatBubbleLeftIcon },
     { id: 'medicine', name: 'Medicine', icon: BellIcon },
     { id: 'period', name: 'Period Tracker', icon: CalendarIcon },
     { id: 'music', name: 'Music', icon: UserGroupIcon },
-    // { id: 'community', name: 'Community', icon: UserGroupIcon },
     { id: 'settings', name: 'Settings', icon: Cog6ToothIcon },
-    { id: 'premium', name: 'Premium', icon: ChartBarIcon }, // Add Premium tab
+    { id: 'premium', name: 'Premium', icon: ChartBarIcon },
     { id: 'profile', name: 'Profile', icon: UserGroupIcon },
-
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'chat':
-        return <AIChat />;
-      case 'medicine':
-        return <MedicineReminder />;
-      case 'period':
-        return <PeriodTracker />;
-      case 'premium': // Handle Premium tab
-        return <PremiumPage />;
-      case 'music':
-        return <Music />;
+      case 'chat': return <AIChat />;
+      case 'medicine': return <MedicineReminder />;
+      case 'period': return <PeriodTracker />;
+      case 'premium': return <PremiumPage />;
+      case 'music': return <Music />;
       case 'settings':
-        return <div className="text-gray-600">Settings Page</div>;
-      case 'community':
-        return <div className="text-gray-600">Community Page</div>;
-      case 'profile':
-        return <Profile />;
-      case 'home':
-        return <Home />;
+        return (
+          <section className="card" aria-labelledby="settings-heading">
+            <h2 id="settings-heading" className="text-xl font-semibold mb-2">Settings</h2>
+            <p className="text-gray-600">Settings are a placeholder in this prototype. Account preferences are not persisted yet.</p>
+          </section>
+        );
+      case 'profile': return <Profile />;
+      case 'home': return <Home />;
       default:
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -115,17 +102,18 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Mood Today</span>
-                  <span className="text-primary font-semibold">Great 😊</span>
+                  <span className="text-primary font-semibold">No mood logged</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Medicine Taken</span>
-                  <span className="text-green-500 font-semibold">3/4</span>
+                  <span className="text-gray-600">Medicine Reminders</span>
+                  <span className="text-primary font-semibold">Not tracked yet</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Next Period</span>
-                  <span className="text-primary font-semibold">In 12 days</span>
+                  <span className="text-gray-600">Cycle Tracking</span>
+                  <span className="text-primary font-semibold">No data yet</span>
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-4">Summary metrics are not persisted in this prototype.</p>
             </motion.div>
           </div>
         );
@@ -140,14 +128,16 @@ const Dashboard = () => {
           <h1 className="text-white text-xl font-bold">Lumi</h1>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-2" aria-label="Main navigation">
           {navItems.map((item) => (
             <button
               key={item.id}
+              type="button"
               onClick={() => setActiveTab(item.id)}
+              aria-current={activeTab === item.id ? 'page' : undefined}
               className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-5 h-5" aria-hidden="true" />
               <span>{item.name}</span>
             </button>
           ))}
@@ -155,8 +145,8 @@ const Dashboard = () => {
 
         <div className="mt-auto">
           <div className="bg-gray-800 rounded-xl p-4">
-            <p className="text-white text-sm mb-2">Download our mobile app</p>
-            <button className="btn-primary w-full">Get App</button>
+            <p className="text-white text-sm mb-2">Mobile app</p>
+            <p className="text-gray-300 text-xs">A mobile version is not available in this prototype.</p>
           </div>
         </div>
       </aside>
@@ -164,26 +154,22 @@ const Dashboard = () => {
       <main className="flex-1 p-8 overflow-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Welcome back, Taylor
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome to LUMI</h1>
             <p className="text-gray-500">Track your wellness journey</p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="btn-primary" onClick={() => setActiveTab('premium')}>
+            <button type="button" className="btn-primary" onClick={() => setActiveTab('premium')}>
               Premium
             </button>
             <img
-              src="https://ui-avatars.com/api/?name=Taylor&background=8B5CF6&color=fff"
-              alt="Profile"
+              src="https://ui-avatars.com/api/?name=LUMI&background=8B5CF6&color=fff"
+              alt="LUMI profile placeholder"
               className="w-10 h-10 rounded-full"
             />
           </div>
         </header>
 
         {renderContent()}
-
-        {/* Add the Voice Assistant */}
         <VoiceAssistant onCommand={handleVoiceCommand} />
       </main>
     </div>
